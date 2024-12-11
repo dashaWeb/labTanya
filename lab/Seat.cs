@@ -8,7 +8,7 @@ namespace lab
 {
     enum Service
     {
-        ECONOMY, BUSINESS,FIRST_CLASS
+        ECONOMY = 200, BUSINESS = 50, FIRST_CLASS = 10
     }
     class Seat
     {
@@ -21,11 +21,11 @@ namespace lab
         private double price;
         private string number;
         private Service service_;
-        public Service Service { get;}
-        public double Price { get;}
-        public string Number { get;}
+        public Service Service { get; }
+        public double Price { get; }
+        public string Number { get; }
         //public Passenger Passenger { get; set; }
-       private void SetPrice()
+        private void SetPrice()
         {
             switch (Service)
             {

@@ -10,11 +10,7 @@ namespace lab
             Passenger passenger = new Passenger { Name = "John", LastName = "Doe", Birthday = new DateTime(2000, 5, 12),Phone = "+38096-458-58-96" };
             
             Console.WriteLine(passenger);
-            for (int i = 0; i < 50; i++)
-            {
-            Console.WriteLine();
-
-            }
+            
         }
     }
 }

@@ -8,14 +8,28 @@ namespace lab
 {
     class Flight
     {
+        public Flight()
+        {
+            GenerateSeats();
+        }
         public string Destination { get; set; }
         public string From { get; set; }
         public string Number { get; set; }
         public DateTime Departure { get; set; }
-        public List<Seat> FreeSeats { get; set; }
-        public List<Seat> ReservedSeats { get;}
+        public List<Seat> FreeSeats { get;} = new List<Seat>();
+        public List<Seat> ReservedSeats { get; } = new List<Seat>();
         public int NumberFreeSeats { get => FreeSeats.Count; }
         public DateTime FlightDuration { get; set; }
-        
+        private void GenerateSeats()
+        {
+            var flights = Enum.GetValues(typeof(Service));
+            foreach (Service item in flights)
+            {
+                for (int i = 0; i < (int)item; i++)
+                {
+                    FreeSeats.Add(new Seat(item));
+                }
+            }
+        }
     }
 }
