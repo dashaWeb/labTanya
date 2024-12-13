@@ -12,18 +12,18 @@ namespace lab
     }
     class Seat
     {
-        public Seat(Service service)
+        public Seat(Service service_)
         {
-            service_ = service;
+            service = service_;
             SetNumber();
             SetPrice();
         }
-        private double price;
+        private double price = 0;
         private string number;
-        private Service service_;
-        public Service Service { get; }
-        public double Price { get; }
-        public string Number { get; }
+        private Service service;
+        public Service Service { get=>service; }
+        public double Price { get=>price; }
+        public string Number { get=>number; }
         //public Passenger Passenger { get; set; }
         private void SetPrice()
         {
@@ -42,7 +42,11 @@ namespace lab
         }
         private void SetNumber()
         {
-            number = (char)new Random().Next(65, 91) + new Random().Next(100).ToString();
+            number = (char)new Random().Next(65, 91) + new Random().Next(1000).ToString();
+        }
+        public override string ToString()
+        {
+            return $"{Service,-20} {number,-10} {Price}$";
         }
     }
 }

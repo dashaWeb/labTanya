@@ -16,10 +16,10 @@ namespace lab
         public string From { get; set; }
         public string Number { get; set; }
         public DateTime Departure { get; set; }
+        public DateTime FlightDuration { get; set; }
         public List<Seat> FreeSeats { get;} = new List<Seat>();
         public List<Seat> ReservedSeats { get; } = new List<Seat>();
         public int NumberFreeSeats { get => FreeSeats.Count; }
-        public DateTime FlightDuration { get; set; }
         private void GenerateSeats()
         {
             var flights = Enum.GetValues(typeof(Service));
@@ -30,6 +30,17 @@ namespace lab
                     FreeSeats.Add(new Seat(item));
                 }
             }
+        }
+        public void print(List<Seat> seats)
+        {
+            foreach (var item in seats)
+            {
+                Console.WriteLine(item);
+            }
+        }
+        public override string ToString()
+        {
+            return $"{Number} {From} {Destination} {Departure.ToShortDateString()} {FlightDuration.ToShortTimeString()} {NumberFreeSeats}";
         }
     }
 }
