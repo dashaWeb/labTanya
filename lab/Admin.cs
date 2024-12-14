@@ -68,7 +68,7 @@ namespace lab
 
         public Flight searchByDate(DateTime date)
         {
-            return Flights.Find(fl => fl.Departure.CompareTo(date) == 0);
+            return Flights.Find(fl => fl.Departure.ToShortDateString().CompareTo(date.ToShortDateString()) == 0);
         }
         public Flight searchByFrom(string from)
         {
