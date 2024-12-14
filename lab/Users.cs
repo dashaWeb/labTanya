@@ -43,15 +43,17 @@ namespace lab
 
             if (passenger.Card != null)
             {
-                Console.WriteLine("Edit card [yes/no]");
+                Console.Write("Edit card [yes/no] --> ");
                 addCard = Console.ReadLine();
                 if (addCard.ToLower() == "no")
                     return;
-                passenger.Card.EditCard();
+                Card card = new Card();
+                card.EditCard();
+                passenger.Card = card;
             }
             else
             {
-                Console.WriteLine("You don't have a card! Add a new card [yes/no]");
+                Console.Write("You don't have a card! Add a new card [yes/no] --> ");
                 addCard = Console.ReadLine();
                 if (addCard.ToLower() == "no")
                     return;
@@ -62,12 +64,11 @@ namespace lab
         }
         private Passenger searchPassenger()
         {
-            Console.WriteLine(@"
+            Console.Write(@"
             Passenger search by : 
                 [1] - By name;
                 [2] - By phone; 
-                    Your choice :: 
-            ");
+                    Your choice :: ");
             int choice;
             if (int.TryParse(Console.ReadLine(), out choice))
             {
@@ -78,6 +79,7 @@ namespace lab
                         Console.Write("Enter the name in the format [name lastname] :: ");
                         search = Console.ReadLine();
                         var name = search.Split(' ');
+                        Console.WriteLine(name[0] + " " + name[1]);
                         return searchByName(name[0], name[1]);
                     case 2:
                         Console.Write("Enter the phone in the format [+380XX-XXX-XX-XX] :: ");
@@ -94,26 +96,26 @@ namespace lab
         }
         private Passenger searchByName(string name, string lastname)
         {
-            return Passengers.Find(pass => pass.Name.ToLower() == name.ToLower() && pass.LastName.ToLower() == lastname);
+            return Passengers.Find(pass => String.Compare(pass.Name, name, true) == 0 && String.Compare(pass.LastName, lastname, true) == 0);
         }
         private Passenger searchByPhone(string phone)
         {
             return Passengers.Find(pass => pass.Phone.ToLower() == phone.ToLower());
         }
-        public void menu()
+        public void menu(Admin admin)
         {
             try
             {
                 int choice;
                 do
                 {
-                    Console.WriteLine(@"
+                    Console.Write(@"
                 [1] - Add passenger;
                 [2] - Edit passenger; 
                 [3] - Find a flight
+                [4] - Print all passengers
                 [0] - Exit
-                    Your choice :: 
-            ");
+                    Your choice :: ");
                     if (int.TryParse(Console.ReadLine(), out choice))
                     {
                         switch (choice)
@@ -137,7 +139,10 @@ namespace lab
                                 }
                                 break;
                             case 3:
-                                order();
+                                order(admin);
+                                break;
+                            case 4:
+                                print();
                                 break;
                         }
                     }
@@ -170,15 +175,14 @@ namespace lab
         }
         public void print()
         {
+            int i = 0;
             foreach (var item in passengers)
             {
-                int i = 0;
                 Console.WriteLine($"#{++i}\n{item}");
             }
         }
-        private void order()
+        private void order(Admin admin)
         {
-            Admin admin = new Admin();
             if (admin.Flights.Count == 0)
             {
                 Console.WriteLine("The flight list is empty");
@@ -190,28 +194,141 @@ namespace lab
                 Console.WriteLine("The flight not found");
                 return;
             }
-            Console.WriteLine("Choose a class ");
-            int i = 0;
-            foreach (var item in Enum.GetNames(typeof(Service)))
+            int i;
+            while (true)
             {
-                Console.WriteLine($"\t [{++i}] - {item} ");
+                try
+                {
+                    Console.Write("Enter the number of seats --> ");
+                    i = int.Parse(Console.ReadLine());
+                    break;
+                }
+                catch (Exception)
+                {
+                }
             }
-            i = int.Parse(Console.ReadLine());
-            var selectSeats = flight.FreeSeats.FindAll(e => e.Service == (Service)Enum.Parse(typeof(Service), Enum.GetNames(typeof(Service))[i - 1]));
-            flight.print(selectSeats);
-            Console.WriteLine("Choose a number seat ");
-            string number = Console.ReadLine();
-            var seat = selectSeats.Find(e => e.Number == number);
-            Console.WriteLine("Book a ticket [yes/no]");
-            number = Console.ReadLine();
-            if (number.ToLower() == "no")
-                return;
-            Console.WriteLine(@"Choose a payment method [1] - cash; [2] - card");
-            i = int.Parse(Console.ReadLine());
-            if(i != 1 || i != 2)
+            string choice;
+            for (int j = 0; j < i; j++)
             {
-                error();
-                return;
+                var seat = flight.getFreeSeat();
+                if (seat == null)
+                {
+                    j--;
+                    continue;
+                }
+                Console.WriteLine("Book a ticket [yes/no]");
+                choice = Console.ReadLine();
+                if (choice.ToLower() == "no")
+                {
+                    break;
+                }
+
+                Passenger passenger;
+                while (true)
+                {
+                    passenger = selectPassenger();
+                    if (passenger == null)
+                    {
+                        Console.WriteLine("Error passenger. Try again");
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                bool res = payment(passenger, seat);
+                if (!res)
+                {
+                    j--;
+                    continue;
+                }
+                var ticket = new Ticket { FlightDeparture = flight.Departure, FlightDestination = flight.Destination, FlightFrom = flight.From, FlightNumber = flight.Number, PassengerName = passenger.Name, Seat = seat, PassengerLastName = passenger.LastName };
+                passenger.Ticket = ticket;
+                flight.FreeSeats.Remove(seat);
+                Console.WriteLine(flight.FreeSeats.Count + "  " + flight.NumberFreeSeats);
+                Console.WriteLine(admin.Flights[0].NumberFreeSeats);
+                flight.ReservedSeats.Add(seat);
+                Console.BackgroundColor = ConsoleColor.Green;
+                Console.WriteLine("The ticket has been sent");
+                Console.ResetColor();
+                Console.WriteLine(ticket);
+            }
+        }
+        private Passenger selectPassenger()
+        {
+            int i;
+            Console.Write(@"
+                    [1] - Select passenger;
+                    [2] - Add new passenger 
+                                --> ");
+            i = int.Parse(Console.ReadLine());
+            switch (i)
+            {
+                case 1:
+                    return searchPassenger();
+                case 2:
+                    var pass = new Passenger();
+                    editPassenger(pass);
+                    passengers.Add(pass);
+                    return pass;
+                default:
+                    return null;
+            }
+        }
+        private bool payment(Passenger pass, Seat seat)
+        {
+            while (true)
+            {
+                Console.Write(@"Choose a payment method [1] - cash; [2] - card; [0] - cancel  --> ");
+                int i = int.Parse(Console.ReadLine());
+                if (i == 0)
+                    return false;
+                if (i != 1 && i != 2)
+                {
+                    Console.WriteLine("Error! Make the right choice");
+                    continue;
+                }
+
+                switch (i)
+                {
+                    case 1:
+                        Console.Write("Enter the amount of money -->");
+                        double cash = Double.Parse(Console.ReadLine());
+                        double remainder = cash - seat.Price;
+                        if (remainder < 0)
+                        {
+                            Console.WriteLine("Insufficient funds");
+                            continue;
+                        }
+                        Console.WriteLine($"Payment successful.The rest of you {remainder}$");
+                        break;
+                    case 2:
+                        if (pass.Card == null)
+                        {
+                            Console.WriteLine("You don't have a card. Add now? [yes/no]");
+                            string choice = Console.ReadLine();
+                            if (choice == "yes")
+                            {
+                                pass.Card = new Card();
+                                pass.Card.EditCard();
+                            }
+                            else
+                            {
+                                Console.WriteLine("Choose another payment method");
+                                continue;
+                            }
+                        }
+                        remainder = pass.Card.Money - seat.Price;
+                        if (remainder < 0)
+                        {
+                            Console.WriteLine("Insufficient funds");
+                            continue;
+                        }
+                        pass.Card.Money -= seat.Price;
+                        Console.WriteLine($"Payment successful.");
+                        break;
+                }
+                return true;
             }
 
         }

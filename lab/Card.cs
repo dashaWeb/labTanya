@@ -20,7 +20,7 @@ namespace lab
             Console.Write(@"
                 Enter CVV --> ");
             CVV = Console.ReadLine();
-            Console.WriteLine(@"
+            Console.Write(@"
                 Enter the date in the format [mm/yyyy] --> ");
             Term = DateTime.Parse("10/" + Console.ReadLine());
             Console.Write(@"

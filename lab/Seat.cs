@@ -14,39 +14,41 @@ namespace lab
     {
         public Seat(Service service_)
         {
-            service = service_;
+            Service = service_;
             SetNumber();
             SetPrice();
         }
-        private double price = 0;
-        private string number;
-        private Service service;
-        public Service Service { get=>service; }
-        public double Price { get=>price; }
-        public string Number { get=>number; }
+        public Seat()
+        {
+
+        }
+
+        public Service Service { get; set; }
+        public double Price { get; set; }
+        public string Number { get; set; }
         //public Passenger Passenger { get; set; }
         private void SetPrice()
         {
             switch (Service)
             {
                 case Service.ECONOMY:
-                    price = 500;
+                    Price = 500;
                     break;
                 case Service.BUSINESS:
-                    price = 1000;
+                    Price = 1000;
                     break;
                 case Service.FIRST_CLASS:
-                    price = 1500;
+                    Price = 1500;
                     break;
             }
         }
         private void SetNumber()
         {
-            number = (char)new Random().Next(65, 91) + new Random().Next(1000).ToString();
+            Number = (char)new Random().Next(65, 91) + new Random().Next(1000).ToString();
         }
         public override string ToString()
         {
-            return $"{Service,-20} {number,-10} {Price}$";
+            return $"{Service,-20} {Number,-10} {Price}$";
         }
     }
 }

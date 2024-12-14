@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace lab
@@ -7,13 +9,41 @@ namespace lab
     {
         static void Main(string[] args)
         {
-            /* Flight flight = new Flight { From = "New Delphi", Destination = "Los Angeles", Departure = new DateTime(2017, 12, 10, 7, 45,0), Number = "AC 2505", FlightDuration = new DateTime(2000,1,1,3,4,0) };
-             Passenger passenger = new Passenger { Name = "John", LastName = "Doe", Birthday = new DateTime(2000, 5, 12),Phone = "+38096-458-58-96" };*/
-
-            /*Admin admin = new Admin();
-            admin.menu();*/
+            Admin admin = new Admin();
             Users users = new Users();
-            users.menu();
+
+            while (true)
+            {
+               
+                try
+                {
+                    Console.Write(@"
+                     Select the operating mode
+                         [1] - admin;
+                         [2] - user;
+                         [0] - exit;
+                               --> ");
+                    int choice = int.Parse(Console.ReadLine());
+                    switch (choice)
+                    {
+                        case 1:
+                            admin.menu();
+                            break;
+                        case 2:
+                            users.menu(admin);
+                            break;
+                        case 0:
+                            return;
+                    }
+                }
+                catch (Exception)
+                {
+                    Console.BackgroundColor = ConsoleColor.Red;
+                    Console.WriteLine("Error! Try again");
+                    Console.ResetColor();
+                }
+            }
+
         }
     }
 }

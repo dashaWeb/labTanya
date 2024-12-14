@@ -14,19 +14,15 @@ namespace lab
         {
             if (File.Exists(fname))
                 load();
-            else
-            {
-                flights = new List<Flight>();
-            }
         }
-        private List<Flight> flights = new List<Flight>();
-        public List<Flight> Flights { get => flights; }
+        public List<Flight> Flights { get; set; } = new List<Flight>();
         private string fname = @"../../../flights.json";
         public void add()
         {
             Flight flight = new Flight();
             edit(flight);
-            flights.Add(flight);
+            flight.GenerateSeats();
+            Flights.Add(flight);
         }
         public void edit(Flight flight)
         {
@@ -41,16 +37,20 @@ namespace lab
                 Enter To --> ");
             flight.Destination = Console.ReadLine();
             Console.Write(@"
-                Enter the departure time of the flight in the format [dd/mm/yyyy] --> ");
-            flight.Departure = DateTime.Parse(Console.ReadLine());
+                Enter the departure date of the flight in the format [dd/mm/yyyy] --> ");
+            string date = Console.ReadLine();
+            Console.Write(@"
+                Enter the departure time of the flight in the format [hh:mm] --> ");
+            string time = Console.ReadLine();
+            flight.Departure = new DateTime(int.Parse(date.Split('/')[2]), int.Parse(date.Split('/')[1]), int.Parse(date.Split('/')[0]), int.Parse(time.Split(':')[0]), int.Parse(time.Split(':')[1]), 01);
             Console.Write(@"
                 Уnter your flight time in the format [hh:mm] --> ");
-            string time = Console.ReadLine();
-            flight.Departure = new DateTime(2000,01,01, int.Parse(time.Split(':')[0]), int.Parse(time.Split(':')[1]),01);
+            string time_ = Console.ReadLine();
+            flight.FlightDuration = new DateTime(2000, 01, 01, int.Parse(time_.Split(':')[0]), int.Parse(time_.Split(':')[1]), 00, DateTimeKind.Local);
         }
         public void delete(Flight flight)
         {
-            flights.Remove(flight);
+            Flights.Remove(flight);
         }
         public void save()
         {
@@ -59,12 +59,16 @@ namespace lab
         }
         public void load()
         {
-            flights = JsonConvert.DeserializeObject<List<Flight>>(File.ReadAllText(fname));
+            Flights = JsonConvert.DeserializeObject<List<Flight>>(File.ReadAllText(fname));
+            foreach (var item in Flights)
+            {
+                item.FreeSeats.RemoveAll(e => e.Price == 0);
+            }
         }
 
         public Flight searchByDate(DateTime date)
         {
-            return Flights.Find(fl => fl.Departure.ToLongDateString() == date.ToShortDateString());
+            return Flights.Find(fl => fl.Departure.CompareTo(date) == 0);
         }
         public Flight searchByFrom(string from)
         {
@@ -76,18 +80,17 @@ namespace lab
         }
         public Flight searchByName(string name)
         {
-            return Flights.Find(fl => fl.Number.ToLower() == name.ToLower());
+            return Flights.Find(fl => String.Compare(fl.Number, name, true) == 0);
         }
         public Flight searchMenu()
         {
-            Console.WriteLine(@"
+            Console.Write(@"
             Flight search by : 
                 [1] - By date;
                 [2] - Place of dispatch;
                 [3] - Place of arrival;
                 [4] - Flight number 
-                    Your choice :: 
-            ");
+                    Your choice :: ");
             int choice;
             if (int.TryParse(Console.ReadLine(), out choice))
             {
@@ -126,15 +129,15 @@ namespace lab
                 int choice;
                 do
                 {
-                    Console.WriteLine(@"
+                    Console.Write(@"
                 [1] - Add flight;
                 [2] - Edit flight; 
                 [3] - Delete flight; 
                 [4] - Sales information; 
                 [5] - Free seats on the flight; 
+                [6] - Show number of free seats;
                 [0] - Exit
-                    Your choice :: 
-            ");
+                    Your choice :: ");
                     if (int.TryParse(Console.ReadLine(), out choice))
                     {
                         switch (choice)
@@ -148,6 +151,8 @@ namespace lab
                                     try
                                     {
                                         var find = searchMenu();
+                                        if (find == null)
+                                            continue;
                                         edit(find);
                                         break;
                                     }
@@ -178,7 +183,7 @@ namespace lab
                                     try
                                     {
                                         var find = searchMenu();
-                                        find.print(find.FreeSeats);
+                                        find.printRecerved();
                                         break;
                                     }
                                     catch (ArgumentException ex)
@@ -193,7 +198,22 @@ namespace lab
                                     try
                                     {
                                         var find = searchMenu();
-                                        find.print(find.ReservedSeats);
+                                        find.print(find.FreeSeats);
+                                        break;
+                                    }
+                                    catch (ArgumentException ex)
+                                    {
+                                        error();
+                                    }
+                                }
+                                break;
+                            case 6:
+                                while (true)
+                                {
+                                    try
+                                    {
+                                        var find = searchMenu();
+                                        Console.WriteLine( find);
                                         break;
                                     }
                                     catch (ArgumentException ex)
@@ -221,6 +241,13 @@ namespace lab
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine("Error!!! Try again!");
             Console.ResetColor();
+        }
+        private void print()
+        {
+            foreach (var item in Flights)
+            {
+                Console.WriteLine(item);
+            }
         }
 
     }
